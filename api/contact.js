@@ -1,5 +1,5 @@
 // Define this flag at the top. Set to true for testing, false for actual API calls.
-const api_test_mode = true;
+const api_test_mode = false;
 
 export default async function handler(req, res) {
     // 1. Ensure it's a POST request
@@ -26,38 +26,43 @@ export default async function handler(req, res) {
         }
 
         // 3. Prepare to call your third-party API
-        // Ensure these environment variables are set in your Vercel project settings
-        const THIRD_PARTY_API_URL = process.env.THIRD_PARTY_API_URL;
-        const THIRD_PARTY_API_KEY = process.env.THIRD_PARTY_API_KEY;
+        const watiApiBaseUrl = process.env.THIRD_PARTY_API_URL;
+        const watiApiToken = process.env.THIRD_PARTY_API_KEY;
 
-        if (!THIRD_PARTY_API_URL) {
-            console.error('THIRD_PARTY_API_URL environment variable is not set.');
+        if (!watiApiBaseUrl || !watiApiToken) {
+            console.error('THIRD_PARTY_API_URL or THIRD_PARTY_API_KEY environment variable is not set.');
             return res.status(500).json({ message: 'Server configuration error: Missing API URL.' });
         }
 
-        const apiPayload = {
-            userName: name,
-            contactNumber: phone,
+        // Construct the WATI API URL
+        const watiApiUrl = `${watiApiBaseUrl}?whatsappNumber=${phone}`;
+
+        // Construct the WATI API payload
+        const watiApiPayload = {
+            template_name: "free_trial_broadcast", // You might want to make this configurable
+            broadcast_name: "Welcome - DEMO",      // Or this
+            parameters: [
+                { name: "name", value: name },
+                { name: "phone", value: phone }
+            ]
         };
 
-        const apiHeaders = {
-            'Content-Type': 'application/json',
+        // Construct the WATI API headers
+        const watiApiHeaders = {
+            'Content-Type': 'application/json-patch+json',
+            'Authorization': `Bearer ${watiApiToken}`
         };
 
-        if (THIRD_PARTY_API_KEY) {
-            apiHeaders['Authorization'] = `Bearer ${THIRD_PARTY_API_KEY}`;
-        }
-
-        console.log(`Calling third-party API at ${THIRD_PARTY_API_URL} with payload:`, apiPayload);
+        console.log(`Preparing to call WATI API at ${watiApiUrl}`);
 
         if (api_test_mode) {
             // In test mode, log the request details and return a mock success
             console.log(`
             --- API TEST MODE: Request Details ---
-            Would attempt to call: fetch('${THIRD_PARTY_API_URL}', {
+            Would attempt to call: fetch('${watiApiUrl}', {
                 method: 'POST',
-                headers: ${JSON.stringify(apiHeaders, null, 2)},
-                body: JSON.stringify(${JSON.stringify(apiPayload, null, 2)})
+                headers: ${JSON.stringify(watiApiHeaders, null, 2)},
+                body: JSON.stringify(${JSON.stringify(watiApiPayload, null, 2)})
             });
             ------------------------------------
             `);
@@ -65,20 +70,21 @@ export default async function handler(req, res) {
             return res.status(200).json({
                 message: 'API Test Mode: Request logged to console, not sent to third-party API.',
                 simulatedRequest: {
-                    url: THIRD_PARTY_API_URL,
+                    url: watiApiUrl,
                     method: 'POST',
-                    headers: apiHeaders,
-                    body: apiPayload
+                    headers: watiApiHeaders,
+                    body: watiApiPayload
                 }
             });
         } else {
             // 4. Call the third-party API (actual call)
-            const thirdPartyResponse = await fetch(THIRD_PARTY_API_URL, {
-                method: 'POST', // Or whatever method the third-party API expects
-                headers: apiHeaders,
-                body: JSON.stringify(apiPayload),
+            console.log('Making actual API call to WATI...');
+            const thirdPartyResponse = await fetch(watiApiUrl, {
+                method: 'POST',
+                headers: watiApiHeaders,
+                body: JSON.stringify(watiApiPayload),
             });
-
+            
             // 5. Get the response body from the third-party API
             let thirdPartyResponseBody;
             const contentType = thirdPartyResponse.headers.get('content-type');
