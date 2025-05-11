@@ -96,3 +96,28 @@ input[type="tel"]:focus {
     color: #c62828;
     border: 1px solid #ef9a9a;
 }
+
+.phone-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#countryCode {
+    padding: 12px 8px;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: white;
+    flex-shrink: 0;
+}
+
+#countryCode:focus {
+    border-color: #66bb6a;
+    box-shadow: 0 0 0 3px rgba(102, 187, 106, 0.2);
+    outline: none;
+}
+
+.phone-input-group input[type="tel"] {
+    flex-grow: 1;
+}

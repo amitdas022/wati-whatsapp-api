@@ -16,7 +16,14 @@
             </div>
             <div class="form-group">
                 <label for="phone">Phone Number:</label>
-                <input type="tel" id="phone" name="phone" required placeholder="Enter your phone number" pattern="[0-9]{10,15}">
+                <div class="phone-input-group">
+                    <select id="countryCode" name="countryCode">
+                        <option value="91">India (+91)</option>
+                        <option value="1">USA (+1)</option>
+                        <option value="31">Netherlands (+31)</option>
+                    </select>
+                    <input type="tel" id="phone" name="phone" required placeholder="Enter phone number" pattern="[0-9]{7,15}">
+                </div>
             </div>
             <button type="submit" class="submit-btn">Submit</button>
         </form>

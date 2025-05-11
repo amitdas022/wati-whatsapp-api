@@ -6,9 +6,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const nameInput = document.getElementById('name');
             const phoneInput = document.getElementById('phone');
+            const countryCodeSelect = document.getElementById('countryCode'); // Get the select element
             const responseMessageDiv = document.getElementById('responseMessage');
 
             const name = nameInput.value.trim();
+            const selectedCountryCode = countryCodeSelect.value; // Get selected country code
             const phone = phoneInput.value.trim();
 
             // Basic validation
@@ -19,16 +21,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            if (!/^\d{10,}$/.test(phone.replace(/\s+/g, ''))) {
-                responseMessageDiv.textContent = 'Please enter a valid phone number (at least 10 digits).';
+            // Updated phone validation (e.g., 7-15 digits for the number part)
+            // You might want to adjust this regex based on typical lengths for the selected countries
+            if (!/^\d{7,15}$/.test(phone.replace(/\s+/g, ''))) {
+                responseMessageDiv.textContent = 'Please enter a valid phone number (7-15 digits).';
                 responseMessageDiv.className = 'message error';
                 responseMessageDiv.style.display = 'block';
                 return;
             }
 
+            const fullPhoneNumber = selectedCountryCode + phone.replace(/\s+/g, ''); // Prepend country code, remove spaces
+
             const formData = {
                 name: name,
-                phone: phone
+                phone: fullPhoneNumber // Send the combined number
             };
 
             // Replace with your actual Vercel backend URL
@@ -53,6 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     responseMessageDiv.className = 'message success';
                     nameInput.value = '';
                     phoneInput.value = '';
+                    // Optionally reset countryCodeSelect.selectedIndex = 0;
                 } else {
                     const errorResult = await response.json().catch(() => ({ message: 'An unknown error occurred.' }));
                     responseMessageDiv.textContent = `Error: ${response.status} - ${errorResult.message || 'Failed to submit form.'}`;
