@@ -4,8 +4,8 @@
   "private": true,
   "description": "Backend for handling WATI contact form submissions.",
   "main": "index.js",
-  "scripts": {
-    "dev": "vercel dev"
-  },
-  "author": "Amit Das"
+  "author": "Amit Das",
+  "dependencies": {
+    "vercel": "^41.7.4"
+  }
 }

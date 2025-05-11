@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        // 2. Get name and phone from the request body (Vercel automatically parses JSON)
+        // 2. Get name and phone from the request body
         const { name, phone } = req.body;
 
         if (!name || !phone) {
@@ -26,7 +26,7 @@ export default async function handler(req, res) {
         }
 
         // 3. Prepare to call your third-party API
-        const watiApiBaseUrl = process.env.THIRD_PARTY_API_URL;
+        const watiApiBaseUrl = process.env.THIRD_PARTY_API_URL + "/api/v1/sendTemplateMessage";
         const watiApiToken = process.env.THIRD_PARTY_API_KEY;
 
         if (!watiApiBaseUrl || !watiApiToken) {
@@ -39,8 +39,8 @@ export default async function handler(req, res) {
 
         // Construct the WATI API payload
         const watiApiPayload = {
-            template_name: "free_trial_broadcast", // You might want to make this configurable
-            broadcast_name: "Welcome - DEMO",      // Or this
+            template_name: "free_trial_broadcast",
+            broadcast_name: "Welcome - DEMO",
             parameters: [
                 { name: "name", value: name },
                 { name: "phone", value: phone }
@@ -50,7 +50,7 @@ export default async function handler(req, res) {
         // Construct the WATI API headers
         const watiApiHeaders = {
             'Content-Type': 'application/json-patch+json',
-            'Authorization': `${watiApiToken}`
+            'Authorization': `Bearer ${watiApiToken}`
         };
 
         console.log(`Preparing to call WATI API at ${watiApiUrl}`);
@@ -101,7 +101,8 @@ export default async function handler(req, res) {
         }
 
     } catch (error) {
-        console.error('Error in backend function:', error.message, error.stack);
+        // Log the entire error object for more detailed debugging information
+        console.error('Error in backend function (full error object):', error);;
         // Avoid exposing detailed internal errors to the client in production
         res.status(500).json({ message: 'An internal server error occurred. Please try again later.' });
     }
