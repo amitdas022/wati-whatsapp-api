@@ -50,7 +50,7 @@ export default async function handler(req, res) {
         // Construct the WATI API headers
         const watiApiHeaders = {
             'Content-Type': 'application/json-patch+json',
-            'Authorization': `Bearer ${watiApiToken}`
+            'Authorization': `${watiApiToken}`
         };
 
         console.log(`Preparing to call WATI API at ${watiApiUrl}`);
