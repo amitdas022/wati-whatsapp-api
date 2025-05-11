@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
 
             // Replace with your actual Vercel backend URL
-            const apiUrl = 'YOUR_VERCEL_BACKEND_API_ENDPOINT_HERE';
+            const apiUrl = '/api/contact';
 
             responseMessageDiv.textContent = 'Sending...';
             responseMessageDiv.className = 'message'; // Reset to default
