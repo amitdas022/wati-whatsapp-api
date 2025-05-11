@@ -1,3 +1,6 @@
+// Define this flag at the top. Set to true for testing, false for actual API calls.
+const api_test_mode = true;
+
 export default async function handler(req, res) {
     // 1. Ensure it's a POST request
     // Handle OPTIONS for CORS preflight
@@ -47,26 +50,49 @@ export default async function handler(req, res) {
 
         console.log(`Calling third-party API at ${THIRD_PARTY_API_URL} with payload:`, apiPayload);
 
-        // 4. Call the third-party API
-        const thirdPartyResponse = await fetch(THIRD_PARTY_API_URL, {
-            method: 'POST', // Or whatever method the third-party API expects
-            headers: apiHeaders,
-            body: JSON.stringify(apiPayload),
-        });
+        if (api_test_mode) {
+            // In test mode, log the request details and return a mock success
+            console.log(`
+            --- API TEST MODE: Request Details ---
+            Would attempt to call: fetch('${THIRD_PARTY_API_URL}', {
+                method: 'POST',
+                headers: ${JSON.stringify(apiHeaders, null, 2)},
+                body: JSON.stringify(${JSON.stringify(apiPayload, null, 2)})
+            });
+            ------------------------------------
+            `);
 
-        // 5. Get the response body from the third-party API
-        let thirdPartyResponseBody;
-        const contentType = thirdPartyResponse.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            thirdPartyResponseBody = await thirdPartyResponse.json();
+            return res.status(200).json({
+                message: 'API Test Mode: Request logged to console, not sent to third-party API.',
+                simulatedRequest: {
+                    url: THIRD_PARTY_API_URL,
+                    method: 'POST',
+                    headers: apiHeaders,
+                    body: apiPayload
+                }
+            });
         } else {
-            thirdPartyResponseBody = await thirdPartyResponse.text();
+            // 4. Call the third-party API (actual call)
+            const thirdPartyResponse = await fetch(THIRD_PARTY_API_URL, {
+                method: 'POST', // Or whatever method the third-party API expects
+                headers: apiHeaders,
+                body: JSON.stringify(apiPayload),
+            });
+
+            // 5. Get the response body from the third-party API
+            let thirdPartyResponseBody;
+            const contentType = thirdPartyResponse.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                thirdPartyResponseBody = await thirdPartyResponse.json();
+            } else {
+                thirdPartyResponseBody = await thirdPartyResponse.text();
+            }
+
+            console.log(`Third-party API responded with status: ${thirdPartyResponse.status}, body:`, thirdPartyResponseBody);
+
+            // 6. Send the third-party API's status and body back to your frontend
+            res.status(thirdPartyResponse.status).json(thirdPartyResponseBody);
         }
-
-        console.log(`Third-party API responded with status: ${thirdPartyResponse.status}, body:`, thirdPartyResponseBody);
-
-        // 6. Send the third-party API's status and body back to your frontend
-        res.status(thirdPartyResponse.status).json(thirdPartyResponseBody);
 
     } catch (error) {
         console.error('Error in backend function:', error.message, error.stack);
