@@ -1,7 +1,16 @@
 export default async function handler(req, res) {
     // 1. Ensure it's a POST request
+    // Handle OPTIONS for CORS preflight
+    if (req.method === 'OPTIONS') {
+        res.setHeader('Allow', ['POST', 'OPTIONS']);
+        res.setHeader('Access-Control-Allow-Origin', '*'); // Be more specific in production
+        res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization'); // Add other headers as needed
+        return res.status(204).end();
+    }
+
     if (req.method !== 'POST') {
-        res.setHeader('Allow', ['POST']);
+        res.setHeader('Allow', ['POST', 'OPTIONS']);
         return res.status(405).json({ message: `Method ${req.method} Not Allowed` });
     }
 
@@ -14,8 +23,14 @@ export default async function handler(req, res) {
         }
 
         // 3. Prepare to call your third-party API
-        const THIRD_PARTY_API_URL = process.env.THIRD_PARTY_API_URL || 'YOUR_THIRD_PARTY_API_ENDPOINT_HERE';
+        // Ensure these environment variables are set in your Vercel project settings
+        const THIRD_PARTY_API_URL = process.env.THIRD_PARTY_API_URL;
         const THIRD_PARTY_API_KEY = process.env.THIRD_PARTY_API_KEY;
+
+        if (!THIRD_PARTY_API_URL) {
+            console.error('THIRD_PARTY_API_URL environment variable is not set.');
+            return res.status(500).json({ message: 'Server configuration error: Missing API URL.' });
+        }
 
         const apiPayload = {
             userName: name,
@@ -34,7 +49,7 @@ export default async function handler(req, res) {
 
         // 4. Call the third-party API
         const thirdPartyResponse = await fetch(THIRD_PARTY_API_URL, {
-            method: 'POST',
+            method: 'POST', // Or whatever method the third-party API expects
             headers: apiHeaders,
             body: JSON.stringify(apiPayload),
         });
@@ -48,18 +63,14 @@ export default async function handler(req, res) {
             thirdPartyResponseBody = await thirdPartyResponse.text();
         }
 
-        console.log(`Third-party API responded with status: ${thirdPartyResponse.status}`);
+        console.log(`Third-party API responded with status: ${thirdPartyResponse.status}, body:`, thirdPartyResponseBody);
 
         // 6. Send the third-party API's status and body back to your frontend
-        if (req.method === 'OPTIONS') {
-            res.status(200).end();
-            return;
-        }
-
         res.status(thirdPartyResponse.status).json(thirdPartyResponseBody);
 
     } catch (error) {
-        console.error('Error in backend function:', error);
-        res.status(500).json({ message: 'An internal server error occurred.' });
+        console.error('Error in backend function:', error.message, error.stack);
+        // Avoid exposing detailed internal errors to the client in production
+        res.status(500).json({ message: 'An internal server error occurred. Please try again later.' });
     }
 }
