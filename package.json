@@ -1,0 +1,11 @@
+{
+  "name": "wati-contact-form-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend for handling WATI contact form submissions.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev"
+  },
+  "author": "Amit Das"
+}
