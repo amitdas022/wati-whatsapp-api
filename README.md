@@ -105,7 +105,3 @@ This project is configured for easy deployment on Vercel:
 4.  Click "Submit".
 5.  The form will attempt to send the data to the backend, which in turn (if not in test mode and configured correctly) will try to send a WhatsApp message via WATI.
 6.  A success or error message will be displayed below the form.
-
----
-
-Feel free to suggest any modifications or further details you'd like to add!
