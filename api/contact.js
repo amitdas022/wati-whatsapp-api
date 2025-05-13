@@ -39,7 +39,7 @@ export default async function handler(req, res) {
 
         // Construct the WATI API payload
         const watiApiPayload = {
-            template_name: "free_trial_broadcast",
+            template_name: "new_chat",
             broadcast_name: "Welcome - DEMO",
             parameters: [
                 { name: "name", value: name },
